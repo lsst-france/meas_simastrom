@@ -90,14 +90,14 @@ class CcdImage : public RefCount
   
   Point  commonTangentPoint;
 
-  void LoadCatalog(const lsst::afw::table::SortedCatalogT<lsst::afw::table::SourceRecord> &Cat, const std::string &fluxField);
+  void LoadCatalog(const lsst::afw::table::SortedCatalogT<lsst::afw::table::SourceRecord> &Cat, const std::string &fluxField, const std::string& centroid="base_SdssCentroid",const std::string& shape="base_SdssShape");
 
  public:
 
   CcdImage(lsst::afw::table::SortedCatalogT<lsst::afw::table::SourceRecord> &Ri, 
     const Point &CommonTangentPoint, const PTR(lsst::afw::image::TanWcs) wcs, const PTR(lsst::daf::base::PropertySet) meta,
     const lsst::afw::geom::Box2I &bbox, const std::string &filter, const PTR(lsst::afw::image::Calib) calib,
-    const int &visit, const int &ccd, const std::string &ccdImage, const std::string &fluxField );
+	   const int &visit, const int &ccd, const std::string &ccdImage, const std::string &fluxField , const std::string& centroid,const std::string& shape);
 
 
     

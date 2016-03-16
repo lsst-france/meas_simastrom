@@ -22,7 +22,7 @@ from __future__ import division, absolute_import
 #
 
 import os
-import numpy
+import numpy as np
 
 import lsst.utils
 import lsst.pex.config as pexConfig
@@ -99,15 +99,28 @@ class SimAstromConfig(pexConfig.Config):
     sourceFluxField = pexConfig.Field(
         doc = "Type of source flux",
         dtype = str,
-        default = "base_CircularApertureFlux_5",   # base_CircularApertureFlux_17_0 in recent stack version 
+        default = "base_CircularApertureFlux_17_0",   # base_CircularApertureFlux_17_0 in recent stack version 
     )
     maxMag = pexConfig.Field(
         doc = "Maximum magnitude for sources to be included in the fit",
         dtype = float,
         default = 22.5, 
     )
-
-
+    coaddName = pexConfig.Field(
+        doc = "Mandatory for getSkymap",
+        dtype = str,
+        default = "deep",
+    ) 
+    centroid = pexConfig.Field(
+        doc = "Centroid type for position estimation",
+        dtype = str,
+        default = "base_SdssCentroid", 
+    )
+    shape = pexConfig.Field(
+        doc = "Shape for error estimation",
+        dtype = str,
+        default = "base_SdssShape", 
+    )
 class SimAstromTask(pipeBase.CmdLineTask):
  
     ConfigClass = SimAstromConfig
@@ -140,11 +153,14 @@ class SimAstromTask(pipeBase.CmdLineTask):
     def run(self, ref, tract):
         
         configSel = StarSelectorConfig()
-        ss = StarSelector(configSel, self.config.sourceFluxField, self.config.maxMag)
+        ss = StarSelector(configSel, self.config.sourceFluxField, self.config.maxMag,self.config.centroid,self.config.shape)
         
-        print self.config.sourceFluxField
+        print self.config.sourceFluxField,self.config.shape
         astromControl = SimAstromControl()
         astromControl.sourceFluxField = self.config.sourceFluxField
+        astromControl.centroid = self.config.centroid
+        astromControl.shape = self.config.shape
+        
 
         assoc = Associations()
         
@@ -210,7 +226,7 @@ class SimAstromTask(pipeBase.CmdLineTask):
         print "Using", filt, "band for reference flux"
 
         refCat = loader.loadSkyCircle(center, afwGeom.Angle(radius, afwGeom.radians), filt).refCat
-        print refCat.getSchema().getOrderedNames()
+        #print refCat.getSchema().getOrderedNames()
         
         # assoc.CollectRefStars(False) # To use USNO-A catalog 
 
@@ -297,7 +313,7 @@ class StarSelector(object) :
     
     ConfigClass = StarSelectorConfig
 
-    def __init__(self, config, sourceFluxField, maxMag):
+    def __init__(self, config, sourceFluxField, maxMag,centroid,shape):
         """Construct a star selector
         
         @param[in] config: An instance of StarSelectorConfig
@@ -305,11 +321,14 @@ class StarSelector(object) :
         self.config = config
         self.sourceFluxField = sourceFluxField
         self.maxMag = maxMag
+        self.centroid=centroid
+        self.shape=shape
     
     def select(self, srcCat, calib):
 # Return a catalog containing only reasonnable stars / galaxies
 
         schema = srcCat.getSchema()
+        #print schema.getOrderedNames()
         newCat = afwTable.SourceCatalog(schema)
         fluxKey = schema[self.sourceFluxField+"_flux"].asKey()
         fluxErrKey = schema[self.sourceFluxField+"_fluxSigma"].asKey()
@@ -345,7 +364,17 @@ class StarSelector(object) :
             footprint = src.getFootprint()
             if footprint is not None and len(footprint.getPeaks()) > 1 :
                 continue
-                
+            vx = np.square(src.get(self.centroid + "_xSigma"))
+            vy = np.square(src.get(self.centroid + "_ySigma"))
+            mxx = src.get(self.shape + "_xx")  
+            myy = src.get(self.shape + "_yy")
+            mxy = src.get(self.shape + "_xy") 
+            vxy = mxy*(vx+vy)/(mxx+myy);
+
+            
+            if vx < 0 or vy< 0 or (vxy*vxy)>(vx*vy) or np.isnan(vx) or np.isnan(vy):
+                continue
+            
             newCat.append(src)
             
         return newCat

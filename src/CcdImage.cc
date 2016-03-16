@@ -40,15 +40,16 @@ namespace simastrom {
 
 static double sq(const double &x) { return x*x;}
 
-void CcdImage::LoadCatalog(const lsst::afw::table::SortedCatalogT<lsst::afw::table::SourceRecord> &Cat,const std::string &fluxField)
+  void CcdImage::LoadCatalog(const lsst::afw::table::SortedCatalogT<lsst::afw::table::SourceRecord> &Cat,const std::string &fluxField, const std::string& centroid, const std::string& shape)
 {
-  auto xKey = Cat.getSchema().find<double>("base_SdssCentroid_x").key;
-  auto yKey = Cat.getSchema().find<double>("base_SdssCentroid_y").key;
-  auto xsKey = Cat.getSchema().find<float>("base_SdssCentroid_xSigma").key;
-  auto ysKey = Cat.getSchema().find<float>("base_SdssCentroid_ySigma").key;
-  auto mxxKey = Cat.getSchema().find<double>("base_SdssShape_xx").key;
-  auto myyKey = Cat.getSchema().find<double>("base_SdssShape_yy").key;
-  auto mxyKey = Cat.getSchema().find<double>("base_SdssShape_xy").key;
+ 
+  auto xKey = Cat.getSchema().find<double>(centroid + "_x").key;
+  auto yKey = Cat.getSchema().find<double>(centroid + "_y").key;
+  auto xsKey = Cat.getSchema().find<float>(centroid + "_xSigma").key;
+  auto ysKey = Cat.getSchema().find<float>(centroid + "_ySigma").key;
+  auto mxxKey = Cat.getSchema().find<double>(shape + "_xx").key;
+  auto myyKey = Cat.getSchema().find<double>(shape + "_yy").key;
+  auto mxyKey = Cat.getSchema().find<double>(shape + "_xy").key;
   auto fluxKey = Cat.getSchema().find<double>(fluxField + "_flux").key;
   auto efluxKey = Cat.getSchema().find<double>(fluxField  + "_fluxSigma").key;
   
@@ -67,11 +68,13 @@ void CcdImage::LoadCatalog(const lsst::afw::table::SortedCatalogT<lsst::afw::tab
       double myy= i->get(myyKey);
       double mxy= i->get(mxyKey);
       ms->vxy = mxy*(ms->vx+ms->vy)/(mxx+myy);
-      if (ms->vx < 0 || ms->vy< 0 || (ms->vxy*ms->vxy)>(ms->vx*ms->vy)) {
-          std::cout << "Bad source detected in LoadCatalog : " << ms->vx << " " << ms->vy << " " << 
-          ms->vxy*ms->vxy << " " << ms->vx*ms->vy << std::endl;
+      /*
+      if (ms->vx < 0 || ms->vy< 0 || (ms->vxy*ms->vxy)>(ms->vx*ms->vy) || isnan(ms->vx) || isnan(ms->vy)) {
+	std::cout << "Bad source detected in LoadCatalog : " << ms->vx << " " << ms->vy << " " << 
+	  ms->vxy*ms->vxy << " " << ms->vx*ms->vy << std::endl;
           continue;
         }
+      */
       ms->flux = i->get(fluxKey);
       ms->eflux = i->get(efluxKey);
       ms->mag = -2.5*log10(ms->flux) + zp; 
@@ -110,7 +113,9 @@ CcdImage::CcdImage(lsst::afw::table::SortedCatalogT<lsst::afw::table::SourceReco
             const int &visit,
             const int &ccd,
             const std::string &camera,
-            const std::string &fluxField ) :
+	    const std::string &fluxField,
+	    const std::string& centroid,
+	    const std::string& shape) :
             
     index(-1), expindex(-1),
     commonTangentPoint(CommonTangentPoint)
@@ -119,7 +124,7 @@ CcdImage::CcdImage(lsst::afw::table::SortedCatalogT<lsst::afw::table::SourceReco
     // zero point
     zp = 2.5*log10(calib->getFluxMag0().first);
     
-    LoadCatalog(Ri, fluxField);
+    LoadCatalog(Ri, fluxField,centroid,shape);
       // Just checking that we get something sensible
 //    std::cout << Ri[10].getRa() << std::endl;
 //    std::cout << wcs->getPixelOrigin() << std::endl;

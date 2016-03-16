@@ -46,7 +46,15 @@ namespace simastrom {
         if (sourceFluxField.empty()) {
             throw LSST_EXCEPT(pexExcept::InvalidParameterError, "sourceFluxField must be specified");
         }
-        std::cout << sourceFluxField << std::endl;
+        std::cout << sourceFluxField << std::endl; 	
+	if (centroid.empty()) {
+            throw LSST_EXCEPT(pexExcept::InvalidParameterError, "centroid must be specified");
+        }
+        std::cout << centroid << std::endl;
+	if (shape.empty()) {
+            throw LSST_EXCEPT(pexExcept::InvalidParameterError, "shape  must be specified");
+        }
+        std::cout << shape << std::endl;
     }
     
     static void __attribute__ ((constructor))
@@ -82,7 +90,7 @@ trapfpe ()
         _cameraList(cameraList)
 {
 
-    std::cout << "sourceFluxField is set to : " << control->sourceFluxField << std::endl;
+  std::cout << "sourceFluxField is set to : " << control->sourceFluxField << "and shape to " << control->shape << std::endl;
     if (_wcsList.size() == 0)
       {
 	std::cout << "simAstrom::simAstrom : empty image list, we give up" << std::endl;

@@ -19,14 +19,14 @@ namespace meas {
 namespace simastrom {
     
     struct SimAstromControl {
-        LSST_CONTROL_FIELD(sourceFluxField, std::string, "name of flux field in source catalog");
-
-        SimAstromControl() :
-            sourceFluxField("base_CircularApertureFlux_7")
+      LSST_CONTROL_FIELD(sourceFluxField, std::string, "name of flux field in source catalog");
+      LSST_CONTROL_FIELD(centroid, std::string, "name of centroid in source catalog");
+      LSST_CONTROL_FIELD(shape, std::string, "name of shape in source catalog");
+       SimAstromControl() :
+      sourceFluxField("base_CircularApertureFlux_7"),centroid("base_SdssCentroid"),shape("base_SdssShape")
         {
             validate();
-        }
-        
+        }   
         void validate() const;
 
         ~SimAstromControl() {};

@@ -21,7 +21,7 @@ from __future__ import division, absolute_import
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
-import numpy
+import numpy as np
 
 import lsst.pex.config as pexConfig
 import lsst.coadd.utils as coaddUtils
@@ -54,7 +54,16 @@ class SimAstromConfig(pexConfig.Config):
         dtype = str,
         default = "base_CircularApertureFlux_5",   # base_CircularApertureFlux_17_0 in recent stack version 
     )
-
+    centroid = pexConfig.Field(
+        doc = "Centroid type for position estimation",
+        dtype = str,
+        default = "base_SdssCentroid", 
+    )
+    shape = pexConfig.Field(
+        doc = "Shape for error estimation",
+        dtype = str,
+        default = "base_SdssShape", 
+    )
 class SimAstromTask(pipeBase.CmdLineTask):
  
     ConfigClass = SimAstromConfig
@@ -98,12 +107,14 @@ class SimAstromTask(pipeBase.CmdLineTask):
         cameraList = []
         
         configSel = StarSelectorConfig()
-        ss = StarSelector(configSel, self.config.sourceFluxField)
+        ss = StarSelector(configSel, self.config.sourceFluxField, self.config.centroid, self.config.shape)
         
         print self.config.sourceFluxField
         astromControl = SimAstromControl()
         astromControl.sourceFluxField = self.config.sourceFluxField
-        
+        astromControl.centroid = self.config.centroid
+        astromControl.shape = self.config.shape
+
         for dataRef in ref :
             src = dataRef.get("src", immediate=True)
             calexp = dataRef.get("calexp", immediate=True)
@@ -150,14 +161,17 @@ class StarSelector(object) :
     
     ConfigClass = StarSelectorConfig
 
-    def __init__(self, config, sourceFluxField):
+    def __init__(self, config, sourceFluxField, centroid, shape):
         """Construct a star selector
         
         @param[in] config: An instance of StarSelectorConfig
         """
         self.config = config
         self.sourceFluxField = sourceFluxField
-    
+        self.centroid=centroid
+        self.shape=shape
+
+
     def select(self, srcCat, calib):
 # Return a catalog containing only reasonnable stars
 
@@ -200,7 +214,17 @@ class StarSelector(object) :
             footprint = src.getFootprint()
             if footprint is not None and len(footprint.getPeaks()) > 1 :
                 continue
-                
+            
+            vx = np.square(src.get(self.centroid + "_xSigma"))
+            vy = np.square(src.get(self.centroid + "_ySigma"))
+            mxx = src.get(self.shape + "_xx")  
+            myy = src.get(self.shape + "_yy")
+            mxy = src.get(self.shape + "_xy") 
+            vxy = mxy*(vx+vy)/(mxx+myy);
+
+            if vx < 0 or vy< 0 or (vxy*vxy)>(vx*vy) or np.isnan(vx) or np.isnan(vy):
+                continue
+            
             newCat.append(src)
             
 #        print len(srcCat), len(newCat)
