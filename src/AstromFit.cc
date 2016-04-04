@@ -11,6 +11,7 @@
 #include <time.h> // for clock
 #include "lsst/pex/exceptions.h"
 #include <fstream>
+#include <sstream>
 #include "lsst/meas/simastrom/Tripletlist.h"
 
 typedef Eigen::SparseMatrix<double> SpMat;
@@ -948,7 +949,7 @@ static void write_vect_in_fits(const Eigen::VectorXd &V, const string &FitsName)
 /*! This is a complete Newton Raphson step. Compute first and 
   second derivatives, solve for the step and apply it, without 
   a line search. */
-unsigned AstromFit::Minimize(const std::string &WhatToFit, const double NSigRejCut)
+unsigned AstromFit::Minimize(const std::string &WhatToFit, const double NSigRejCut, int num_iter,bool debug)
 {
   AssignIndices(WhatToFit);
   
@@ -1018,6 +1019,12 @@ unsigned AstromFit::Minimize(const std::string &WhatToFit, const double NSigRejC
   unsigned tot_outliers = 0;
   double old_chi2 = ComputeChi2().chi2;
 
+
+  stringstream strniter;
+  strniter << num_iter;
+  
+  int niter_out=-1;
+
   while (true)
     {
       Eigen::VectorXd delta = chol.solve(grad);
@@ -1025,9 +1032,23 @@ unsigned AstromFit::Minimize(const std::string &WhatToFit, const double NSigRejC
       OffsetParams(delta);
       Chi2 current_chi2(ComputeChi2());
       cout << current_chi2 << endl;
+      
+     
+      niter_out++;
+      stringstream strniter_out;
+      strniter_out << niter_out;
+      
+      if(debug)
+	{
+	  
+	  std::string tupleName = "res_" + strniter.str() +"_"+ strniter_out.str() +".list";
+	  MakeResTuple(tupleName);
+	}
+	  
       if (current_chi2.chi2 > old_chi2)
 	{
-	  cout << "WARNING: chi2 went up, exiting outlier rejection loop" << endl;
+	  cout << "WARNING: chi2 went up, exiting outlier rejection loop after iteration " << strniter_out.str() << endl;
+	    
 	  returnCode = 1;
 	  break;
 	}
@@ -1050,14 +1071,14 @@ unsigned AstromFit::Minimize(const std::string &WhatToFit, const double NSigRejC
       SpMat h(_nParTot,tList.NextFreeIndex());
       h.setFromTriplets(tList.begin(), tList.end());
       int update_status = chol.update(h, false /* means downdate */);
-      cout << "INFO: cholmod  update_status " << update_status << endl;
+      cout << "INFO: cholmod  update_status " << update_status << " for outlier removal iteration " << strniter_out.str()  << endl;
       /* The contribution of outliers to the gradient is the opposite
 	 of the contribution of all other terms, because they add up
 	 to 0 */
       grad *= -1;
       tend = clock();
-      std::cout << "INFO: CPU for chi2-update_factor "  
-		<< float(tend-tstart)/float(CLOCKS_PER_SEC) << std::endl;
+      cout << "INFO: CPU for chi2-update_factor "  
+		<< float(tend-tstart)/float(CLOCKS_PER_SEC) << " for outlier removal iteration " << strniter_out.str()  << endl;
       tstart = tend;
     }
 

@@ -120,6 +120,11 @@ class SimAstromConfig(pexConfig.Config):
         doc = "Shape for error estimation",
         dtype = str,
         default = "base_SdssShape", 
+    ) 
+    doDebug = pexConfig.Field(
+        doc = "persist SimAstrom output...",
+        dtype = bool,
+        default = False,
     )
 class SimAstromTask(pipeBase.CmdLineTask):
  
@@ -248,7 +253,8 @@ class SimAstromTask(pipeBase.CmdLineTask):
         print chi2
 
         for i in range(20) :
-            r = fit.Minimize("Distortions Positions",5) # outliers removal at 5 sigma.
+            print "Minimization step ",i
+            r = fit.Minimize("Distortions Positions",5,i,self.config.doDebug) # outliers removal at 5 sigma.
             chi2 = fit.ComputeChi2()
             print chi2
             if r == 0 :

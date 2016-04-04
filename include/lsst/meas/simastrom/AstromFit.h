@@ -88,7 +88,7 @@ class AstromFit {
   /*! It calls AssignIndices, LSDerivatives, solves the linear system
     and calls OffsetParams. No line search. Relies on sparse linear
     algebra. */
-  unsigned Minimize(const std::string &WhatToFit, const double NSigRejCut=0);
+  unsigned Minimize(const std::string &WhatToFit, const double NSigRejCut=0, int num_iter=-1,bool debug=false);
 
   //! Compute derivatives of measurement terms for this CcdImage
   void LSDerivatives1(const CcdImage &Ccd, 
