@@ -56,6 +56,9 @@ public:
 
 
 
+#ifndef SWIG
+
+/* swig gets lost in namespaces for CountedRef*/
 typedef std::map<unsigned,CountedRef<Gtransfo > > ChipTransfosType;
 
 /* One way to describe the chip arrangement in the focal plane is to
@@ -68,6 +71,8 @@ ChipTransfosType ReadTransfoFile(const std::string &FileName, Frame& TPFrame);
 
 //! Write a set of transfos to a file.
 void WriteTransfoFile(const std::string &FileName, const ChipTransfosType &V, const Frame & TPFrame); 
+
+#endif /* SWIG */
 
 }}} // end of namespaces
 
