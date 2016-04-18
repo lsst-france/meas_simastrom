@@ -38,6 +38,9 @@ Python interface to lsst::meas::simastrom classes
 #include "lsst/meas/simastrom/ConstrainedPolyModel.h"
 #include "lsst/meas/simastrom/PhotomFit.h"
 #include "lsst/meas/simastrom/SimplePhotomModel.h"
+#include "lsst/meas/simastrom/MatchExposure.h"
+#include "lsst/meas/simastrom/ChipArrangement.h"
+#include "lsst/meas/simastrom/ExposureCatalog.h"
 %}
 
 %include "lsst/p_lsstSwig.i"
@@ -124,3 +127,6 @@ namespace simastrom {
 %include "lsst/meas/simastrom/PhotomFit.h"
 %include "lsst/meas/simastrom/SimplePhotomModel.h"
 
+%include "lsst/meas/simastrom/MatchExposure.h"
+%include "lsst/meas/simastrom/ChipArrangement.h"
+%include "lsst/meas/simastrom/ExposureCatalog.h"
