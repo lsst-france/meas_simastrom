@@ -4,6 +4,7 @@
 
 #include "lsst/meas/simastrom/BaseStar.h"
 #include "lsst/meas/simastrom/Frame.h"
+#include "lsst/meas/simastrom/Gtransfo.h" // for TanPix2RaDec
 namespace lsst {
 namespace meas {
 namespace simastrom {
@@ -21,6 +22,9 @@ WARNING : The flux of the returned BaseStar's is in fact a magnitude. */
 
 
   int UsnoRead(const Frame &F, UsnoColor Color, BaseStarList &ApmList);
+
+
+  bool UsnoCollect(const Frame &usnoFrame, const TanPix2RaDec &Wcs, BaseStarList &UsnoCat);
 
   //! accepts both sexagesimal and decimal values.
   double RaStringToDeg(const std::string RaString);

@@ -9,6 +9,7 @@
 #include "lsst/meas/simastrom/AstroUtils.h"
 #include "lsst/meas/simastrom/Frame.h"
 #include "lsst/meas/simastrom/Gtransfo.h"
+#include "lsst/pex/exceptions.h"
 
 namespace lsst {
 namespace meas {
@@ -384,11 +385,45 @@ int UsnoRead(double minra, double maxra,
   return ApmList.size();
 }
 
-
 int UsnoRead(const Frame &W, UsnoColor Color, BaseStarList &ApmList)
 {
   return UsnoRead(W.xMin, W.xMax, W.yMin, W.yMax, Color, ApmList);
 }
+
+static void ConvertMagToFlux(BaseStarList *List, const double Zp)
+{
+  
+  for (auto si = List->begin(); si != List->end(); ++si)
+    {
+      BaseStar &s = *(*si);
+      if (s.flux < 40)  s.flux = pow(10., -(s.flux-Zp)*0.4);
+      else s.flux = 0;
+    }
+}
+
+
+
+bool UsnoCollect(const Frame &usnoFrame, const TanPix2RaDec &Wcs, BaseStarList &UsnoCat)
+{
+  UsnoCat.clear();
+  UsnoRead(usnoFrame, RColor, UsnoCat);
+  if (UsnoCat.size() == 0)
+    {
+      std::cerr << "ERROR: Could not collect anything from a ref catalog : giving up" << std::endl;
+      throw LSST_EXCEPT(lsst::pex::exceptions::DomainError, "No objects grabbed in the reference catalog."); 
+      return false;
+    }
+
+  ConvertMagToFlux( &UsnoCat, 0.); 
+
+  TanRaDec2Pix UsnoToPix = Wcs.invert();
+
+  // convert the ( ra, dec) to pixel scale
+  UsnoCat.ApplyTransfo(UsnoToPix);
+  return true;
+}
+
+
 
 Frame ApplyTransfo(const Frame& inputframe,const Gtransfo &T, const WhichTransformed W) 
 {
