@@ -41,6 +41,10 @@ static double sq(const double &x) { return x*x;}
       s->flux = i->get(fluxKey);
       catalog.push_back(s);
     }
+  std::cout << "INFO: catalog for chip " << Chip << " has " << catalog.size() << " entries" << std::endl;
+  // DEBUG
+  if (Chip == 0)
+    catalog.write("cat0.list");
 
 }
 
@@ -56,7 +60,9 @@ void ExposureCatalog::TangentPlaneCatalog(ExposureStarList &Catalog)
       for (auto s = cat.begin(); s != cat.end(); ++s)
 	{
           ExposureStar *es = new ExposureStar((*s).get(), chip);
-	  (FatPoint &) *es = pix2TP.apply(*es); // transform to degrees in TP
+	  FatPoint tmp;
+	  pix2TP.TransformPosAndErrors(*es, tmp); // transform to degrees in TP
+	  (FatPoint &) *es = tmp;
 	  Catalog.push_back(es);
 	}
     }
