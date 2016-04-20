@@ -35,6 +35,8 @@ PolyMappingArrangement::PolyMappingArrangement(const std::string &FileName, cons
 		       "ERROR: PolyMappingArrangement::PolyMappingArrangement\
  : could not read nchip mappings in "+FileName);
   
+  if (!nchips) const_cast<unsigned &>(nchips) = t.size();
+
   pix2TP.resize(t.size());
   
   for (auto i = t.begin(); i != t.end(); ++i)
