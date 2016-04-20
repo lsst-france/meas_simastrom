@@ -77,7 +77,7 @@ bool MatchExposure(ExposureCatalog &EC, const Point &TangentPoint, const SimAstr
   // grab the reference catalog, from the provided file if any.
   BaseStarList refCat;
   UsnoCollect(skyFrame, tp2Sky, refCat);
-  cout << "INFO: " << tpCat.size() << " objects in total " << endl;
+  cout << "INFO: " << tpCat.size() << " objects in total in image" << endl;
 
   const std::vector<int> chips = EC.Chips();
   // Let us match now
@@ -118,14 +118,16 @@ bool MatchExposure(ExposureCatalog &EC, const Point &TangentPoint, const SimAstr
     }
 
 
-
-  delete match;
-  match = ListMatchCollect((BaseStarList&)tpCat, refCat, &guess, AstromControl.secondMatchCut/3600);
-  match->SetTransfoOrder(order);
-  match->RefineTransfo(3);
-  guess = *dynamic_cast<const GtransfoPoly*>(match->Transfo());
-  cout << "re-collected " << match->size() << " matches (with refine)" << endl;
-  cout << "new guess " << endl << guess << endl;
+  for (int iter = 0; iter<3; ++iter)
+    {
+      delete match;
+      match = ListMatchCollect((BaseStarList&)tpCat, refCat, &guess, AstromControl.secondMatchCut/3600);
+      match->SetTransfoOrder(order);
+      match->RefineTransfo(3);
+      guess = *dynamic_cast<const GtransfoPoly*>(match->Transfo());
+      cout << "re-collected " << match->size() << " matches (with refine)" << endl;
+      cout << "new guess " << endl << guess << endl;
+    }
 
   if (match->size() < AstromControl.linMatchMinCount)
     {
