@@ -34,7 +34,7 @@ namespace simastrom {
 
 
        SimAstromControl() :
-      sourceFluxField("base_CircularApertureFlux_7"),centroid("base_SdssCentroid"),shape("base_SdssShape"), linMatchCut(1.5), secondMatchCut(1.), linMatchMinCount(10), distortionDegree(3), minMatchPerChip(5)
+      sourceFluxField("base_CircularApertureFlux_17_0"),centroid("base_SdssCentroid"),shape("base_SdssShape"), linMatchCut(1.5), secondMatchCut(1.), linMatchMinCount(10), distortionDegree(3), minMatchPerChip(5)
         {
             validate();
         }   
