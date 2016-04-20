@@ -41,7 +41,9 @@ class ExposureStar : public BaseStar
 
 typedef StarList<ExposureStar> ExposureStarList;
 
-//! Assembles a catalog (with coordinates in the tangent plane) from a multi-chip camera. See the comments at the end of tools/matchexposure.cc for the grand sceme.
+ class SimAstromControl;
+
+//! Assembles a catalog (with coordinates in the tangent plane) from a multi-chip camera. See the comments at the end of MatchExposure.cc for the grand scheme.
 class ExposureCatalog
 {
   std::vector<int> chips;
@@ -52,8 +54,8 @@ class ExposureCatalog
   //!
   ExposureCatalog(const ChipArrangement *A);
 
-  //!
-  void AddCalexp(const lsst::afw::table::SortedCatalogT<lsst::afw::table::SourceRecord> &Cat, const int Chip);
+  //! 
+  void AddCalexp(const lsst::afw::table::SortedCatalogT<lsst::afw::table::SourceRecord> &Cat, const int Chip, const SimAstromControl &Control);
 
 #ifndef SWIG
   //! Assembles the exposure catalog (coordinates in degrees in TP)
