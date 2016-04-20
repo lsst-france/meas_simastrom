@@ -46,15 +46,12 @@ namespace simastrom {
         if (sourceFluxField.empty()) {
             throw LSST_EXCEPT(pexExcept::InvalidParameterError, "sourceFluxField must be specified");
         }
-        std::cout << sourceFluxField << std::endl; 	
 	if (centroid.empty()) {
             throw LSST_EXCEPT(pexExcept::InvalidParameterError, "centroid must be specified");
         }
-        std::cout << centroid << std::endl;
 	if (shape.empty()) {
             throw LSST_EXCEPT(pexExcept::InvalidParameterError, "shape  must be specified");
         }
-        std::cout << shape << std::endl;
     }
     
     static void __attribute__ ((constructor))

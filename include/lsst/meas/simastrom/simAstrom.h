@@ -26,11 +26,11 @@ namespace simastrom {
       LSST_CONTROL_FIELD(linMatchCut, double, "max distance for collecting loose matches (arcsec)");
       LSST_CONTROL_FIELD(secondMatchCut, double, "max distance for collecting tight matches (arcsec)");
 
-      LSST_CONTROL_FIELD(linMatchMinCount, unsigned, "minimum number of matches to consider a match successfull");
+      LSST_CONTROL_FIELD(linMatchMinCount, int, "minimum number of matches to consider a match successfull");
 
-      LSST_CONTROL_FIELD(distortionDegree, unsigned, "polynomial degree used to describe distortions");
+      LSST_CONTROL_FIELD(distortionDegree, int, "polynomial degree used to describe distortions");
 
-      LSST_CONTROL_FIELD(minMatchPerChip, unsigned, "min number of matches per chip");
+      LSST_CONTROL_FIELD(minMatchPerChip, int, "min number of matches per chip");
 
 
        SimAstromControl() :
