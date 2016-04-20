@@ -42,10 +42,6 @@ static double sq(const double &x) { return x*x;}
       catalog.push_back(s);
     }
   std::cout << "INFO: catalog for chip " << Chip << " has " << catalog.size() << " entries" << std::endl;
-  // DEBUG
-  if (Chip == 0)
-    catalog.write("cat0.list");
-
 }
 
 
